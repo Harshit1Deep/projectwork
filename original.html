@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        .container {
+            padding: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .events {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .event-card {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            width: 150px;
+            text-align: center;
+        }
+        .event-card:hover {
+            background-color: #eaeaea;
+        }
+        form {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        input, textarea, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="container">
+        <h1>Welcome! Please Login</h1>
+        <button class="btn" onclick="showHomePage()">Skip Login</button>
+    </div>
+
+    <!-- Home Page -->
+    <div id="homePage" class="container hidden">
+        <h1>Select an Event</h1>
+        <div class="events">
+            <div class="event-card" onclick="showEventPage('Sports')">Sports</div>
+            <div class="event-card" onclick="showEventPage('Marathon')">Marathon</div>
+            <div class="event-card" onclick="showEventPage('Startup')">Startup</div>
+        </div>
+    </div>
+
+    <!-- Event Registration Page -->
+    <div id="eventPage" class="container hidden">
+        <h1>Register for <span id="eventName"></span></h1>
+        <form id="registrationForm">
+            <label for="name">Name</label>
+            <input type="text" id="name" required>
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" required>
+            <label for="image">Upload Image (Optional)</label>
+            <input type="file" id="image" accept="image/*">
+            <label for="message">Message</label>
+            <textarea id="message" rows="3"></textarea>
+            <button type="submit">Submit</button>
+        </form>
+        <button class="btn" onclick="showViewRegistrations()">View Registrations</button>
+        <button class="btn" onclick="showHomePage()">Back to Events</button>
+    </div>
+
+    <!-- View Registrations Page -->
+    <div id="viewRegistrationsPage" class="container hidden">
+        <h1>Registrations for <span id="viewEventName"></span></h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date of Birth</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody id="registrationsTable"></tbody>
+        </table>
+        <button class="btn" onclick="showHomePage()">Back to Events</button>
+    </div>
+
+    <script>
+        // Variables
+        let currentEvent = "";
+        const registrations = JSON.parse(localStorage.getItem("registrations")) || {};
+
+        // Show and Hide Pages
+        function showHomePage() {
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("homePage").classList.remove("hidden");
+            document.getElementById("eventPage").classList.add("hidden");
+            document.getElementById("viewRegistrationsPage").classList.add("hidden");
+        }
+
+        function showEventPage(eventName) {
+            currentEvent = eventName;
+            document.getElementById("eventName").textContent = eventName;
+            document.getElementById("homePage").classList.add("hidden");
+            document.getElementById("eventPage").classList.remove("hidden");
+        }
+
+        function showViewRegistrations() {
+            document.getElementById("viewEventName").textContent = currentEvent;
+            const tableBody = document.getElementById("registrationsTable");
+            tableBody.innerHTML = "";
+
+            const eventRegistrations = registrations[currentEvent] || [];
+            eventRegistrations.forEach(reg => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${reg.name}</td>
+                    <td>${reg.dob}</td>
+                    <td>${reg.message}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById("eventPage").classList.add("hidden");
+            document.getElementById("viewRegistrationsPage").classList.remove("hidden");
+        }
+
+        // Registration Form Submit
+        document.getElementById("registrationForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = document.getElementById("name").value;
+            const dob = document.getElementById("dob").value;
+            const message = document.getElementById("message").value;
+
+            if (!registrations[currentEvent]) registrations[currentEvent] = [];
+            registrations[currentEvent].push({ name, dob, message });
+
+            localStorage.setItem("registrations", JSON.stringify(registrations));
+            alert("Registration Successful!");
+            document.getElementById("registrationForm").reset();
+        });
+    </script>
+</body>
+</html>
